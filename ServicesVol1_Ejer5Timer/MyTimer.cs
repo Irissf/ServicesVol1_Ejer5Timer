@@ -12,52 +12,49 @@ namespace ServicesVol1_Ejer5Timer
     class MyTimer
     {
         static readonly object key = new object();
-        public static Deleg del; //Deleg leaderDeleg = new Deleg(increment);
+        Deleg leaderDeleg; //Deleg leaderDeleg = new Deleg(increment);
         public int interval;
-        static Thread secondThread;
-        public bool runPause = false;
+        public bool runRun = false;
+        public bool notEnding = false;
 
         public MyTimer(Deleg leaderDeleg)
         {
-            Deleg del = leaderDeleg;
+            this.leaderDeleg = leaderDeleg;
             Thread secondThread = new Thread(start);//inicio start
+            secondThread.IsBackground = true;
             secondThread.Start();
         }
-
         public void run()
         {
 
-            lock (key)
+            while (runRun)
             {
-                if (runPause)
-                {
-                    Monitor.Wait(key);
-                }
-                else
-                {
-                    Console.WriteLine("empiezo");
-                    del();
-                }
+                leaderDeleg();
+                Thread.Sleep(interval);
             }
-
-
         }
 
         public void pause()
         {
-            runPause = true;
+            runRun = false;
         }
 
-        public void start()//para controlar el fregado
+        public void start()
         {
-            if (runPause)
+            while (!notEnding)
             {
-                Console.WriteLine("entro aqui");
-                Monitor.Pulse(key);
-                runPause = false;
+                if (runRun)
+                {
+                    lock (key)
+                    {
+                        run();
+                    }
+                }
             }
-            
+
+
         }
+
     }
 
 }
