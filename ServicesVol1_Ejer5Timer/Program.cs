@@ -26,7 +26,7 @@ namespace ServicesVol1_Ejer5Timer
             {
                 Console.WriteLine("Press any key to start.");
                 Console.ReadKey();
-                t.run();
+                t.runPause = true;
                 Console.WriteLine("Press any key to pause.");
                 Console.ReadKey();
                 t.pause();
