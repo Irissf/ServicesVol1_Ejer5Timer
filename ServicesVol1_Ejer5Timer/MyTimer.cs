@@ -14,8 +14,8 @@ namespace ServicesVol1_Ejer5Timer
         static readonly object key = new object();
         Deleg leaderDeleg; //Deleg leaderDeleg = new Deleg(increment);
         public int interval;
-        public bool runRun = false;
-        public bool notEnding = false;
+        public bool runRun = true;
+        public bool pauseCont = true;
 
         public MyTimer(Deleg leaderDeleg)
         {
@@ -23,35 +23,55 @@ namespace ServicesVol1_Ejer5Timer
             Thread secondThread = new Thread(start);//inicio start
             secondThread.IsBackground = true;
             secondThread.Start();
+
         }
         public void run()
         {
 
-            while (runRun)
+            lock (key)
             {
-                leaderDeleg();
-                Thread.Sleep(interval);
+                Monitor.Pulse(key);
+                pauseCont = false;
             }
+
         }
 
         public void pause()
         {
-            runRun = false;
+            lock (key)
+            {
+                pauseCont = true;
+            }
         }
 
         public void start()
         {
-            while (!notEnding)
+            while (runRun)
             {
-                if (runRun)
+                lock (key)
                 {
-                    lock (key)
+                    if (pauseCont)
                     {
-                        run();
+                        Monitor.Wait(key);
                     }
+                    leaderDeleg();
+                    Thread.Sleep(interval);
+
+                    //El if else puede dar fallos, si comprobamos primero la condición y lo metemos a pause ya no sigue lo demás
+                    //y si no cumple pues hace lo de fuera del if
+
+                    //if (!pauseCont)
+                    //{
+                    //    leaderDeleg();
+                    //    Thread.Sleep(interval);
+                    //}else
+                    //{
+
+                    //        Monitor.Wait(key);
+
+                    //}
                 }
             }
-
 
         }
 
